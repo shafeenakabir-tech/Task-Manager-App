@@ -1,13 +1,15 @@
 import React, {useState, useEffect} from 'react';
 import TaskItem from './components/TaskItem.jsx';
-import {fetchTasks, addTaskItem} from './services/api.js';
+import {fetchTasks, addTaskItem, deleteTaskItem} from './services/api.js';
 import AddTaskItem from './components/AddTaskItem.jsx';
 import {Container, Row, Col } from 'react-bootstrap';
+import { Link, useNavigate } from 'react-router-dom';
 
 function App(){
 const [tasks, setTasks] = useState([]);
 const [loading, setLoading] = useState(true);
 const [error, setError] = useState('');
+const [refresh, setRefresh] = useState(false);
 const [taskData, setTaskData] = useState({
   title : '',
   description : '',
@@ -16,13 +18,27 @@ const [taskData, setTaskData] = useState({
   completedAt : new Date().toISOString()
 });
 const handleChange = (e) => {
-    setTaskData({...taskData, [e.target.name]: e.target.value});    
+    const { name, value, type, checked } = e.target;
+  setTaskData({
+    ...taskData,
+    [name]: type === 'checkbox' ? checked : value
+  });   
 }
 
 const addTask = async (taskData) => {
   try{
     const newTask = await addTaskItem(taskData);
     setTasks([...tasks, newTask]);
+  } catch (err) {
+    setError(err.message);
+  }
+}
+
+const deleteTask = async (i) => {
+  try{
+    await deleteTaskItem(i);
+    // setTasks(tasks.filter(task => task.id !== i))
+    setRefresh(!refresh);
   } catch (err) {
     setError(err.message);
   }
@@ -40,11 +56,39 @@ useEffect(() => {
  };
   getTasks();
 
-}, []);
+}, [refresh]);
 
 const handleSubmit = async(e) => {
   e.preventDefault();
   addTask(taskData);
+  handleReset();
+}
+
+const handleReset = () => {
+  setTaskData({
+    title : '',
+    description : '',
+    isCompleted : false,
+    createdAt : new Date().toISOString(),
+    completedAt : new Date().toISOString()
+  });
+}
+
+const handleDelete = async(e, i) => {
+  e.preventDefault(); 
+  deleteTask(i);
+}
+
+const handleEdit = (e,i) => {
+  e.preventDefault();
+  editTask(i);
+
+}
+
+const navigate = useNavigate();
+function editTask(taskId)
+{
+   navigate(`/EditTaskItem/${taskId}`);
 }
 
 if (loading) return <p>Loading tasks ..  </p>
@@ -57,7 +101,10 @@ return (
       <Row>
         <Col><h1>Task List</h1></Col>
         <Col>
-        <AddTaskItem handleSubmit={handleSubmit} handleChange={handleChange}></AddTaskItem>
+        <AddTaskItem handleSubmit={handleSubmit} 
+        handleChange={handleChange}
+        handleReset={handleReset}
+        taskData={taskData}></AddTaskItem>
         </Col>
       </Row>
      
@@ -67,7 +114,9 @@ return (
       <Col>
        {tasks.length === 0 ? (
       <p> No tasks available</p>) : (
-        tasks.map(task => <TaskItem key ={task.id} task={task} />)
+        tasks.map(task => <TaskItem key ={task.id} task={task} 
+          handleDelete={handleDelete}
+          handleEdit = {handleEdit} />)
       )}
       </Col>
     </Row>  
