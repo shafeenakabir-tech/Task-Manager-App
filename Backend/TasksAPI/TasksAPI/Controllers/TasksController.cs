@@ -73,7 +73,7 @@ namespace TasksAPI.Controllers
 
 
         // PUT /tasks/{id}
-        [HttpPut]
+        [HttpPut("{id}")]
         public async Task<IActionResult> PatchAsync(int id, TaskRequest taskUpdateRequest)
         {
             var taskItem = await _context.TaskItems

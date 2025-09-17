@@ -8,6 +8,11 @@ export async function fetchTasks(){
     return await response.json();
 }
 
+export async function fetchTaskById(id){
+    const response = await axios.get('http://localhost:5145/api/tasks/{id}'.
+        replace('{id}', id));
+    return response.data;
+}
 export async function addTaskItem(taskData){
     const response = await axios.post('http://localhost:5145/api/tasks', taskData);
   /* if(!response.ok)  {
@@ -22,4 +27,9 @@ export async function deleteTaskItem(id){
         throw new Error('Network response for add task was not ok');
     }*/
     return response.data;
+}
+
+export async function editTaskItem(id, taskData){
+    const response = await axios.put(`http://localhost:5145/api/tasks/${id}`, taskData);
+        return response.data;
 }

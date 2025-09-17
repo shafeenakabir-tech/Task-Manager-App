@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 function TaskItem( {task, handleDelete }) {
     return (
         <div className='task-item'>
@@ -7,8 +8,9 @@ function TaskItem( {task, handleDelete }) {
             <p>Status: {task.isCompleted ? "Completed" : "Pending"}</p>
             <Button onClick={(e) => handleDelete(e, task.id)} variant="danger" 
             size="sm">Delete</Button>
-            <Button onClick={(e) => handleEdit(e, task.id)} variant="primary"
-            size="sm">Edit</Button>
+            <Link to={`/EditTaskItem/${task.id}`}  >
+            <Button variant="primary" size="sm">Edit</Button>
+            </Link> 
         </div>
     )
 }

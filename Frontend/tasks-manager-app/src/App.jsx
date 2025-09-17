@@ -3,7 +3,8 @@ import TaskItem from './components/TaskItem.jsx';
 import {fetchTasks, addTaskItem, deleteTaskItem} from './services/api.js';
 import AddTaskItem from './components/AddTaskItem.jsx';
 import {Container, Row, Col } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import {Link, Routes, Route, useNavigate} from 'react-router-dom';
+import { EditTaskItem } from './components/EditTaskItem.jsx';
 
 function App(){
 const [tasks, setTasks] = useState([]);
@@ -57,14 +58,16 @@ useEffect(() => {
   getTasks();
 
 }, [refresh]);
-
+const navigate = useNavigate();  
 const handleSubmit = async(e) => {
   e.preventDefault();
-  addTask(taskData);
-  handleReset();
+  await addTask(taskData);
+  setRefresh(!refresh);
+  //handleReset();
+  navigate('/');
 }
 
-const handleReset = () => {
+const handleReset = () => { 
   setTaskData({
     title : '',
     description : '',
@@ -79,35 +82,23 @@ const handleDelete = async(e, i) => {
   deleteTask(i);
 }
 
-const handleEdit = (e,i) => {
-  e.preventDefault();
-  editTask(i);
 
-}
-
-const navigate = useNavigate();
-function editTask(taskId)
-{
-   navigate(`/EditTaskItem/${taskId}`);
-}
 
 if (loading) return <p>Loading tasks ..  </p>
 if (error) return <p>Error : {error}</p>
 
 return (
-  <Container>
+   <Routes>
+        <Route path="/" element={
+        <Container>
     <Row>
       <Col>
       <Row>
         <Col><h1>Task List</h1></Col>
         <Col>
-        <AddTaskItem handleSubmit={handleSubmit} 
-        handleChange={handleChange}
-        handleReset={handleReset}
-        taskData={taskData}></AddTaskItem>
+        <Link to="/AddTaskItem">Add Task</Link>
         </Col>
-      </Row>
-     
+      </Row>     
       </Col>
     </Row>
     <Row>
@@ -115,13 +106,23 @@ return (
        {tasks.length === 0 ? (
       <p> No tasks available</p>) : (
         tasks.map(task => <TaskItem key ={task.id} task={task} 
-          handleDelete={handleDelete}
-          handleEdit = {handleEdit} />)
+          handleDelete={handleDelete}          
+          />)
       )}
       </Col>
-    </Row>  
+    </Row>
+     </Container>  }></Route> 
+      <Route path="/AddTaskItem" element={<AddTaskItem handleSubmit={handleSubmit} 
+       handleChange={handleChange}
+        handleReset={handleReset}
+        taskData={taskData} />}></Route>     
+      <Route path="/EditTaskItem/:id" element={<EditTaskItem handleChange={handleChange}
+          taskData={taskData}
+          setTaskData={setTaskData}
+          refresh={refresh}
+          setRefresh={setRefresh}/>}  />     
    
-    </Container>
+     </Routes>  
 );
 
 }
